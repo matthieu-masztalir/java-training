@@ -13,6 +13,7 @@
 
     <modules>
         <module>java8</module>
+        <module>java9-jigsaw</module>
     </modules>
 
     <properties>

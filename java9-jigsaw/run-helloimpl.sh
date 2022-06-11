@@ -1,0 +1,1 @@
+java --module-path target  -m servicesimpl/com.training.java.serviceimpl.HelloImpl
