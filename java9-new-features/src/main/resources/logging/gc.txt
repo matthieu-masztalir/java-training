@@ -1,0 +1,5 @@
+ConcGCThreads: 3
+ParallelGCThreads: 13
+Initialize mark stack with 4096 chunks, maximum 16384
+Using G1
+GC(0) Pause Young (G1 Evacuation Pause) 24M->4M(256M) 5.478ms
