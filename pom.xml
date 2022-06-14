@@ -15,6 +15,7 @@
         <module>java8</module>
         <module>java9-jigsaw</module>
         <module>java9-new-features</module>
+        <module>java10</module>
     </modules>
 
     <properties>
