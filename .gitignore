@@ -82,3 +82,8 @@ nb-configuration.xml
 ## OS X
 ##############################
 .DS_Store
+
+##############################
+## java 11 modules
+##############################
+resources/com/training/java/files/*.txt
