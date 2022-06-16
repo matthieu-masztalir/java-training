@@ -21,6 +21,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jackson-databing.version>2.13.3</jackson-databing.version>
         <junit-juniter-api.version>5.8.2</junit-juniter-api.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -33,6 +34,13 @@
                 <artifactId>junit-jupiter-api</artifactId>
                 <version>${junit-juniter-api.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson-databing.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
