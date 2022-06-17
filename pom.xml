@@ -17,6 +17,7 @@
         <module>java9-new-features</module>
         <module>java10</module>
         <module>java11</module>
+        <module>java12</module>
     </modules>
 
     <properties>
