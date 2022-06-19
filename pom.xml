@@ -18,6 +18,7 @@
         <module>java10</module>
         <module>java11</module>
         <module>java12</module>
+        <module>java14</module>
     </modules>
 
     <properties>
