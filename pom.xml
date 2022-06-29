@@ -22,6 +22,7 @@
         <module>java15</module>
         <module>java16</module>
         <module>java17</module>
+        <module>java18</module>
     </modules>
 
     <properties>
@@ -74,6 +75,11 @@
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.4.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
