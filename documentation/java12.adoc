@@ -1,0 +1,407 @@
+= java 12
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+Mars 2019
+
+== String : nouvelles méthodes
+
+=== indent()
+
+Signature
+
+[source]
+----
+public String indent(int n)
+----
+
+Nom assez explicite. Cela va ajuster l’indentation d’un texte, d’une ligne ou plusieurs.
+
+Si le paramètre passé est > à 0, la méthode ajoute des espaces en début de ligne.
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class StringExampleTest {
+    @Test
+    void shouldIndentStringWithPositiveNumberLeading() {
+        // Given
+        final String message = "Hello world";
+
+        // When
+        final String messageIndent = message.indent(2);
+
+        // Then
+        Assertions.assertEquals("  Hello world\n", messageIndent);
+    }
+
+    @Test
+    void shouldIndentStringWithNegativeNumberLeading() {
+        // Given
+        final String message = "  Hello world";
+
+        // When
+        final String messageIndent = message.indent(-2);
+
+        // Then
+        Assertions.assertEquals("Hello world\n", messageIndent);
+    }
+
+    /**
+     * Affect only whitespaces, not characters
+     */
+    @Test
+    void shouldIndentStringWithNumberLeadingGreatherThanNumberOfSpaces() {
+        // Given
+        final String message = "  Hello world";
+
+        // When
+        final String messageIndent = message.indent(-10);
+
+        // Then
+        Assertions.assertEquals("Hello world\n", messageIndent);
+    }
+}
+----
+
+=== transform()
+
+Signature
+
+[source]
+----
+public <R> R transform(Function<? super String, ? extends R> f)
+----
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class StringExampleTest {
+    @Test
+    void shouldTransformString() {
+        // Given
+        final String message = "5c,4e";
+
+        // When
+        final String messageTransformed = message.transform(s ->
+                new StringBuilder(s).reverse().toString()
+        );
+
+        // Then
+        Assertions.assertEquals("e4,c5", messageTransformed);
+    }
+}
+----
+
+== File
+
+=== File.mismatch
+
+Trouver la position de l’écart de contenu entre 2 fichiers
+
+Signature
+
+[source]
+----
+public static long mismatch(Path path, Path path2) throws IOException
+----
+
+Retourne -1 si le contenu des 2 fichiers est identiques
+
+Retourne l’index du caractère où commence le déphasage entre le contenu des 2 fichiers
+
+[source, java]
+----
+package com.training.java.file;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public class FileExampleTest {
+    @Test
+    void shouldNotFindMismatch_whenCompareTwoFiles() throws IOException {
+        // Given
+        final Path filePathInit = Files.createTempFile("file1", ".txt");
+        final Path filePathSecond = Files.createTempFile("file2", ".txt");
+
+        Files.writeString(filePathInit, "Java 12");
+        Files.writeString(filePathSecond, "Java 12");
+
+        // When
+        long mismatch = Files.mismatch(filePathInit, filePathSecond);
+
+        // Then
+        Assertions.assertEquals(-1, mismatch);
+    }
+}
+----
+
+Test de deux contenus différents
+
+[source, java]
+----
+package com.training.java.file;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public class FileExampleTest {
+    @Test
+    void shouldReturnMismatch_whenCompareTwoFiles() throws IOException {
+        // Given
+        final Path filePathInit = Files.createTempFile("file1", ".txt");
+        final Path filePathSecond = Files.createTempFile("file2", ".txt");
+
+        Files.writeString(filePathInit, "Java 12");
+        Files.writeString(filePathSecond, "Java 12 in progress");
+
+        // When
+        long mismatch = Files.mismatch(filePathInit, filePathSecond);
+
+        // Then
+        Assertions.assertEquals(7, mismatch);
+    }
+}
+----
+
+== Collections
+
+=== teeing()
+
+Exécuter 2 collectors puis un merge de données
+
+Signature
+[source]
+----
+Collector<T, ?, R> teeing(Collector<? super T, ?, R1> downstream1,
+                          Collector<? super T, ?, R2> downstream2,
+                          BiFunction<? super R1, ? super R2, R> merger)
+----
+
+[source, java]
+----
+package com.training.java.collection;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+public class CollectionExampleTest {
+    @Test
+    void useTeeing() {
+        double mean = Stream.of(1, 2, 3, 4, 5)
+                .collect(Collectors.teeing(Collectors.summingDouble(value -> value),
+                        Collectors.counting(), (sum, count) -> sum / count));
+
+        Assertions.assertEquals(3.0, mean);
+    }
+}
+----
+
+== Number : format compact
+
+En fonction d’une Locale, par exemple US, permet d’afficher un nombre dans un style SHORT ou LONG.
+
+SHORT : 2.6K
+
+LONG : 2600
+
+Signature
+
+[source]
+----
+public static NumberFormat getCompactNumberInstance(Locale locale,
+                                                    NumberFormat.Style formatStyle)
+----
+
+test avec le style SHORT
+
+[source, java]
+----
+package com.training.java.number;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+
+public class NumberExampleTest {
+    @Test
+    void useCompactNumberShortFormat() {
+        // Given
+        final NumberFormat shortFormat =
+            NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.SHORT);
+        shortFormat.setMaximumFractionDigits(2);
+
+        // When Then
+        Assertions.assertEquals("2.5K", shortFormat.format(2500));
+    }
+}
+----
+
+test avec le format LONG
+
+[source, java]
+----
+package com.training.java.number;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+
+public class NumberExampleTest {
+    @Test
+    void useCompactNumberLongFormat() {
+        // Given
+        final NumberFormat longFormat =
+            NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.LONG);
+        longFormat.setMaximumFractionDigits(2);
+
+        // When Then
+        Assertions.assertEquals("2.59 thousand", longFormat.format(2594));
+    }
+}
+----
+
+test avec le format LONG arrondi
+
+[source, java]
+----
+package com.training.java.number;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+
+public class NumberExampleTest {
+    @Test
+    void useCompactNumberLongFormatRounded() {
+        // Given
+        final NumberFormat longFormat =
+					NumberFormat.getCompactNumberInstance(Locale.US, NumberFormat.Style.LONG);
+        longFormat.setMaximumFractionDigits(2);
+
+        // When Then
+        Assertions.assertEquals("2.6 thousand", longFormat.format(2595));
+    }
+}
+----
+
+== Switch (preview)
+
+L’instruction Switch s’offre une nouvelle dynamique, une nouvelle syntaxe, plus compacte, plus rapide à écrire, plus symphonique que dis-je 🙂
+
+[source, java]
+----
+package com.training.java.switchpreview;
+
+import java.time.DayOfWeek;
+
+public class SwitchExample {
+    public String getTypeOfDay(final DayOfWeek dayOfWeek) {
+        return switch (dayOfWeek) {
+            case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY -> "at work";
+            case SATURDAY, SUNDAY -> "holidays";
+        };
+    }
+}
+----
+
+Compilation failed ?
+
+[source]
+----
+java: switch expressions are a preview feature and are disabled by default.
+  (use --enable-preview to enable switch expressions)
+----
+
+En Java 12, la nouvelle syntaxe est en mode preview.
+
+Ajouter ces paramètres au lancement du test.
+
+[source]
+----
+-Xlint:preview --enable-preview
+----
+
+Pour ajouter ce paramétrage si on utilise Maven
+
+[source, xml]
+----
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+                <compilerArgs>--enable-preview</compilerArgs>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+----
+
+== Pattern matching (preview) - GA en Java 14
+
+cf docs Java 14
+
+== Changement au niveau JVM
+
+=== Garbage collector : Shenandoah (experimental)
+
+Algorithme pour diminuer le temps de pause pour traiter la collecte simultanément en s’appuyant sur les threads Java.
+
+Le temps de pause n’est pas dépendant de la taille de la Heap.
+
+G.A. en Java 15.
+
+=== Microbenchmark
+
+Java 12 introduit une suite d’une centaine de benchmarks pour tester le code de la JDK.
+
+Utile pour les développeurs qui travaillent sur la JVM en même ou qui veulent créer de nouveaux benchmarks.
+
+=== CDS : Class Data Sharing
+
+Permet de réduire le temps de démarrage et l’empreinte mémoire entre plusieurs JVM.
+
+Cela génère une liste de classe par défaut qui contient les classes de bibliothèques de base sélectionnées.
+
+Activé par défaut depuis Java 12.

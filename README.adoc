@@ -1,0 +1,89 @@
+= Java training
+
+:uri-linkedin: https://fr.linkedin.com/in/matthieumasztalir
+
+ifdef::env-github[]
+image:https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555[link={uri-linkedin},width=140]
+image:http://ForTheBadge.com/images/badges/built-with-love.svg[]
+endif::[]
+
+ifndef::env-github[]
+image::https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555[link={uri-linkedin},width=140]
+image::http://ForTheBadge.com/images/badges/built-with-love.svg[width=140]
+endif::[]
+
+[.text-center]
+Ce repository est utilisé pour découvrir les features des différentes versions de Java.
+
+[.text-center]
+C'est un repository de découverte personnelle, que *vous pouvez aimer, liker, forker avec gaiété et volupté*.
+
+== Prérequis
+
+=== Installer sdkman
+
+Pour installer différentes versions du JDK, j'utilise https://sdkman.io/install[sdkman].
+
+*Commandes basiques*
+
+Vérifier la version
+
+[source,shell]
+----
+sdk version
+----
+
+**Lister les versions de Java **
+
+[source,shell]
+----
+sdk list java
+----
+
+J'utilise les versions https://openjdk.org/[openJDK]
+
+Dans la liste : *Java.net*
+
+[literal]
+|     | 20.ea.4      | open    |            | 20.ea.4-open
+|     | 20.ea.3      | open    |            | 20.ea.3-open
+| >>> | 19.ea.29     | open    | installed  | 19.ea.29-open
+|     | 19.ea.28     | open    |            | 19.ea.28-open
+|     | 19.ea.1.pma  | open    |            | 19.ea.1.pma-open
+|     | 18.0.1.1     | open    | installed  | 18.0.1.1-open
+|     | 17.0.2       | open    | local only | 17.0.2-open
+|     | 13.0.2       | open    | local only | 13.0.2-open
+|     | 12.0.2       | open    | local only | 12.0.2-open
+|     | 11.0.2       | open    | installed  | 11.0.2-open
+|     | 9.0.4        | open    | local only | 9.0.4-open
+
+**Installation d'une version (par exemple JDK 19)
+**
+
+[source,shell]
+----
+sdk install java 19.ea.29-open
+----
+
+=== Utilisation de Maven
+
+Configuration maven
+
+Chaque niveau des sources/target est configuré par module Maven.
+
+
+== Usage
+
+Chaque module contient :
+
+* soit une implémentation du code dans le package ``src/main/java/com/training/java/<feature>``
+* soit directement le code dans un test ``src/main/java/com/training/java/<feature>``
+
+Dans tous les cas, un test unitaire est codé pour vérifier l'exécution de l'implémentation.
+
+== Documentation
+
+L'ensemble de mes notes, au format asciidoc, se trouve dans le répertoire *documentation*.
+
+Il y a un fichier par version de Java.
+

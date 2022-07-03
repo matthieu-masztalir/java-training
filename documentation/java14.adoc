@@ -1,0 +1,162 @@
+= java 14
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+En mars 2020
+
+== Switch
+
+Nouvelle syntaxe plus compacte : lambda-like.
+
+[source, java]
+----
+package com.training.java.switchexpression;
+
+import java.time.DayOfWeek;
+
+public class SwitchExample {
+    /**
+     * All case must be cover
+     *
+     * @param dayOfWeek {@link DayOfWeek}
+     * @return True when it's a week-end !!
+     */
+    boolean isHoliday(DayOfWeek dayOfWeek) {
+        return switch (dayOfWeek) {
+            case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY -> false;
+            case SATURDAY, SUNDAY -> true;
+        };
+    }
+}
+----
+
+Possibilité de stocker le résultat du switch dans une variable désormais
+
+[source, java]
+----
+package com.training.java.switchexpression;
+
+import java.time.DayOfWeek;
+
+public class SwitchExample {
+    /**
+     * <p>Switch result store in a variable.</p>
+     * <p>Use yield keyword.</p>
+     * <p>Brackets are mandatory around yield keyword.</p>
+     * <p>Default case is mandatory otherwise there are a error :</p>
+     * <p>java: the switch expression does not cover all possible input values</p>
+     */
+    boolean useYieldKeyword(final Integer op1, final String comparator, final Integer op2) {
+        var result = switch (comparator) {
+            case "GREATER THAN" -> {
+                yield op1 > op2;
+            }
+            case "LOWER THAN" -> op1 < op2;
+            default -> false;
+        };
+
+        return result;
+    }
+}
+----
+
+A retenir
+
+[quote]
+Stockage dans une variable possible
+
+[quote]
+Utilisation du mot clé yield possible mais non obligatoire. Dans le cas de son utilisation, les accolades sont obligatoires.
+
+[quote]
+Dans le premier exemple, tous les cas de DayOfWeek sont couverts : pas de case default.
+
+[quote]
+Dans le second exemple, tous les cas des valeurs des arguments ne sont pas couverts : case default obligatoire sinon le code ne compile pas.
+
+Erreur possible
+
+[source]
+----
+java: the switch expression does not cover all possible input values
+----
+
+== NullPointerException
+
+Plus de détails sur la cause de l’exception dans le message
+
+[source, java]
+----
+package com.training.java.npe;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class NullPointerExceptionTest {
+    /**
+     * More details in {@link NullPointerException}
+     */
+    @Test
+    void seeDetailsInNullPointerException() {
+        int[] arr = null;
+
+        try {
+            arr[0] = 1;
+        } catch (Exception exception) {
+            final String message = "Cannot store to int array because \"arr\" is null";
+            Assertions.assertEquals(message, exception.getMessage());
+        }
+    }
+}
+----
+
+On a précisément la variable qui cause l’exception alors que dans les versions Java précédente, nous avions uniquement la ligne de code dans la stacktrace qui posait problème.
+
+== Améliorations en preview
+
+=== Text block
+
+Toujours en preview.
+
+Les exemples seront codés en Java 15.
+
+=== Pattern matching sur l’instruction instanceof (JEP 394)
+
+Release en Java 16.
+
+Les exemples seront codés en Java 16.
+
+=== Record
+
+[https://openjdk.org/jeps/359](https://openjdk.org/jeps/359)
+
+Release en Java 16.
+
+Les exemples seront codés en Java 16 [https://openjdk.org/jeps/395](https://openjdk.org/jeps/395)
+
+== Feature Incubator
+
+Différentes des features en preview, les features du package incubator sont des API non terminés ou des outils que la JDK fournit comme features expérimentales.
+
+Packaging : pour créer un installeur et faire un double-clic pour exécuter le code
+
+== JVM features
+
+Garbage collector Z porté sur Windows et MacOs - expérimental
+
+Non-uniform memory access (NUMA) pour le GC G1
+
+Java Flight Recorder : package `jdk.jfr.consumer` pour streamer les données

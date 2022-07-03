@@ -1,0 +1,1040 @@
+= java 11
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+LTS
+
+Septembre 2018
+
+== Strings
+
+=== String.isBlank()
+
+Tester si une chaîne est vide ou contient uniquement des espaces blancs.
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StringExample {
+    @Test
+    void useIsBlankEmpty() {
+        Assertions.assertTrue("".isBlank());
+    }
+
+    /**
+     * Implementation of isBlank method removes all whitespaces
+     */
+    @Test
+    void useIsBlankWithWhitespaces() {
+        Assertions.assertTrue(" ".isBlank());
+    }
+}
+----
+
+=== String.lines()
+
+Créer une stream de lignes séparées par un caractère de fin de ligne \n ou \r ou \r\n
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StringExample {
+    @Test
+    void useLines() {
+        // Given
+        final String multilines = "Hello \n World";
+
+        // When
+        final List<String> collectMultilines = multilines.lines()
+                .collect(Collectors.toList());
+
+        // Then
+        Assertions.assertEquals(2, collectMultilines.size());
+    }
+}
+----
+
+=== String.strip()
+
+Supprime les espaces blancs en début et fin de chaîne.
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class StringExample {
+    @Test
+    void useStripLeadingWhitespace() {
+        Assertions.assertEquals("abc", " abc".strip());
+    }
+
+    @Test
+    void useStripTrailingWhitespace() {
+        Assertions.assertEquals("abc", "abc ".strip());
+    }
+
+    @Test
+    void useStrip() {
+        Assertions.assertEquals("a b c", "a b c".strip());
+    }
+}
+----
+
+=== String.stripTrailing()
+
+Supprime les espaces blancs en fin de chaîne
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class StringExample {
+    @Test
+    void useStripTrailing() {
+        Assertions.assertEquals("abc", "abc ".stripTrailing());
+    }
+}
+----
+
+=== String.repeat()
+
+Répéter des caractères X fois
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class StringExample {
+    @Test
+    void useRepeat() {
+        Assertions.assertEquals("0000", "0".repeat(4));
+    }
+----
+
+=== Combiner les nouvelles features : lines(), isBlank(), strip()
+
+[source, java]
+----
+package com.training.java.string;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StringExample {
+     @Test
+    void useNewFeatureString() {
+        // Given
+        final String multilines = "Hello world \n developers !";
+
+        // When
+        List<String> collectMultilines = multilines.lines()
+                .filter(line -> !line.isBlank())
+                .map(String::strip)
+                .collect(Collectors.toList());
+
+        // Then
+        Assertions.assertEquals(2, collectMultilines.size());
+        Assertions.assertEquals(Arrays.asList("Hello world", "developers !"), collectMultilines);
+    }
+}
+----
+
+== Gestion de fichiers
+
+Ajout des méthodes static readString et writeString
+
+Signatures
+
+[source]
+----
+public static String readString(Path path) throws IOException
+public static String readString(Path path, Charset cs) throws IOException
+
+public static Path writeString(Path path, CharSequence csq, OpenOption... options)
+public static Path writeString(Path path, CharSequence csq, OpenOption... options)
+----
+
+Test
+[source, java]
+----
+package com.training.java.files;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public class FilesExampleTest {
+    @Test
+    void useReadWriteStringFromFile() throws IOException {
+        CharSequence message = "read/write string from/to a file";
+        String pathFile = "src/test/resources/com/training/java/files/";
+        Path path = Files.writeString(Files.createTempFile(Path.of(pathFile),
+                    "readwritestring", ".txt"), message);
+
+        // Then
+        final String content = Files.readString(path);
+        Assertions.assertEquals(message, content);
+    }
+}
+----
+
+== Collections
+
+=== Ajout de List.toArray()
+
+Signature
+
+[source]
+----
+default <T> T[] toArray(IntFunction<T[]> generator)
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.collections;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class CollectionExampleTest {
+
+    @Test
+    void useToArray() {
+        // Given
+        final List<String> words = Arrays.asList("Hello", "world");
+
+        // When
+        final String[] wordsArr = words.toArray(String[]::new);
+
+        // Then
+        final String[] expected = {"Hello", "world"};
+        Assertions.assertArrayEquals(expected, wordsArr);
+    }
+}
+----
+
+== Predicate
+
+=== Ajout de not
+
+Signature
+
+[source]
+----
+static <T> Predicate<T> not(Predicate<? super T> target)
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.predicate;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+public class PredicateExampleTest {
+    @Test
+    void useNotPredicate() {
+        // Given
+        final List<String> words = Arrays.asList("e4", "e5", "\n \n");
+
+        // When
+        final List<String> collectNotBlankWords = words.stream()
+                .filter(Predicate.not(String::isBlank))
+                .collect(Collectors.toList());
+
+        // Then
+        Assertions.assertEquals(Arrays.asList("e4", "e5"), collectNotBlankWords);
+    }
+}
+----
+
+== Lambdas et utilisation de var
+
+Possibilité d’utiliser var pour déclarer une variable dans une expression lambda.
+
+Parenthèse obligatoire
+
+Test
+
+[source, java]
+----
+package com.training.java.lamdas;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class LambdasExampleTest {
+    @Test
+    void useVarLocalVariable() {
+        // Given
+        final List<String> words = Arrays.asList("e4", "e5");
+
+        // When
+        final List<String> collectWords = words.stream()
+                .map((var word) -> word.toUpperCase())
+                .collect(Collectors.toList());
+
+        // Then
+        Assertions.assertEquals(Arrays.asList("E4", "E5"), collectWords);
+    }
+}
+----
+
+== HTTP client
+
+En java 9, le nouveau client HTTP est au sein du module `jdk.incubator.httpclient` et ne sera stable qu’à partir de Java 11.
+
+En Java 11, il est au sein du module `java.net.http`
+
+Java 9
+
+[source, shell]
+----
+java --list-modules | grep httpclient
+jdk.incubator.httpclient@9.0.4
+----
+
+On va utiliser une ressource REST de test exposée par l’outil Postman : https://postman-echo.com/get
+
+=== Installation du certificat HTTPS au sein de notre JVM
+
+Récupérer le certificat en local : fichier rootca1.cer. Il s’agit du certificat intermédiaire du site postman-echo.com
+
+Utilisation de l’outil keytool de la JDK pour importer le certificat dans le keystore de la JVM
+
+[source, shell]
+----
+keytool -importcert -file /Users/matt/Downloads/dl/rootca1.cer \
+    -keystore ~/.sdkman/candidates/java/9.0.4-open/lib/security/cacerts \
+    -alias amazon-root-ca1
+----
+
+Faire confiance au certificat : oui
+
+Le mot de passe par défaut d’un keystore est `changeit`
+
+Exemple
+
+Fichier pom.xml pour utiliser jackson-databind est mappé la réponse JSON avec un POJO Java
+
+[source, xml]
+----
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+</dependency>
+----
+
+[source, java]
+----
+package com.training.java.httpclient;
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class HttpClientExample {
+    public PostmanEchoResponse getPostmanEcho()
+        throws URISyntaxException, IOException, InterruptedException {
+        final HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(new URI("https://postman-echo.com/get"))
+                .GET()
+                .build();
+
+        final HttpResponse<String> response = HttpClient.newHttpClient()
+                .send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+        return new ObjectMapper().readValue(response.body(), PostmanEchoResponse.class);
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.httpclient;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+
+class HttpClientExampleTest {
+    private HttpClientExample httpClientExample;
+
+    @BeforeEach
+    void setUp() {
+        httpClientExample = new HttpClientExample();
+    }
+
+    @Test
+    void getPostmanEcho() throws URISyntaxException, IOException, InterruptedException {
+        // When
+        final PostmanEchoResponse postmanEchoResponse = httpClientExample.getPostmanEcho();
+
+        // Then
+        Assertions.assertEquals("https://postman-echo.com/get", postmanEchoResponse.getUrl());
+    }
+}
+----
+
+=== Appel asynchrone
+
+[source, java]
+----
+package com.training.java.httpclient;
+
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.concurrent.CompletableFuture;
+
+public class HttpClientExample {
+    /**
+     * Use async call to postman echo resource
+     *
+     * @return {@link CompletableFuture}
+     * @throws URISyntaxException error in resource URI
+     */
+    public CompletableFuture<PostmanEchoResponse> getAsyncPostmanEcho() throws URISyntaxException {
+        final HttpRequest httpRequest = HttpRequest.newBuilder()
+                .uri(new URI("https://postman-echo.com/get"))
+                .GET()
+                .build();
+
+        return HttpClient.newHttpClient()
+                .sendAsync(httpRequest, HttpResponse.BodyHandlers.ofString())
+                .thenApply(HttpResponse::body)
+                .thenApply(s -> {
+                    try {
+                        return new ObjectMapper().readValue(s, PostmanEchoResponse.class);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.httpclient;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.net.URISyntaxException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+class HttpClientExampleTest {
+    private HttpClientExample httpClientExample;
+
+    @BeforeEach
+    void setUp() {
+        httpClientExample = new HttpClientExample();
+    }
+
+    @Test
+    void getAsyncPostmanEcho() throws URISyntaxException, ExecutionException, InterruptedException {
+        // When
+        final CompletableFuture<PostmanEchoResponse> postmanEchoResponse = httpClientExample.getAsyncPostmanEcho();
+
+        // Then
+        Assertions.assertEquals("https://postman-echo.com/get", postmanEchoResponse.get().getUrl());
+    }
+}
+----
+
+== Les classes internes
+
+=== Les classes internes static
+
+Déclaration : tous les modifiers (public, protected, private, default)
+
+Accès uniquement aux membres statiques de la classe principale
+
+Une classes internes static peut déclarer des membres statiques et non statiques
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+public class EnclosingWithStaticClasse {
+    private static String defaultName = "default";
+
+    public static class StaticNested {
+        public String sayHello() {
+            return "Hello world " + defaultName;
+        }
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class EnclosingWithStaticClasseTest {
+
+    @Test
+    void useStaticNestedClasse() {
+        EnclosingWithStaticClasse.StaticNested staticNested = new EnclosingWithStaticClasse.StaticNested();
+
+        Assertions.assertEquals("Hello world default", staticNested.sayHello());
+    }
+}
+----
+
+=== Classs interne non static
+
+inner class
+
+Déclaration : tous les modifiers (public, protected, private, default)
+
+Come les variables d’instances et méthodes, l’inner class est associée à l’instance de la classe principale
+
+Accès à tous les membres de la classe principale, membres static et d’instance
+
+Peut seulement définir des membres non static
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+public class OuterWithNonStaticNestedClass {
+    public class Inner {
+        public String sayHello() {
+            return "Hello world";
+        }
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class OuterWithNonStaticNestedClassTest {
+    @Test
+    void useNonStaticNestedClass() {
+        // Given
+        final OuterWithNonStaticNestedClass outerClass = new OuterWithNonStaticNestedClass();
+        final OuterWithNonStaticNestedClass.Inner inner = outerClass.new Inner();
+
+        // When Then
+        Assertions.assertEquals("Hello world", inner.sayHello());
+    }
+}
+----
+
+=== Local classes
+
+C’est un type spécial d’inner classe.
+
+C’est une classe définit à l’intérieur d’une méthode
+
+Pas de modifier utilisable
+
+Vous avez accès au membres static et non-static
+
+Vous pouvez seulement définir des attributs d’instance
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+public class LocalClassExample {
+    public String sayHello() {
+        class Local {
+            String sayHello() {
+                return "Hello world";
+            }
+        }
+
+        final Local local = new Local();
+        return local.sayHello();
+    }
+}
+----
+
+Test
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class LocalClassExampleTest {
+    @Test
+    void useLocalClass() {
+        final LocalClassExample localClassExample = new LocalClassExample();
+        Assertions.assertEquals("Hello world", localClassExample.sayHello());
+    }
+}
+----
+
+=== Classe anonyme
+
+Peuvent être utilisée pour définir une implémentation d’interface ou de classe abstraite sans avoir à créer une implémentaion réutilisable.
+
+Pas de modifier dans la déclaration
+
+Accès aux membres static et non-static
+
+Peut seulement définir des membres d’instance
+
+Ne peut pas définir de constructeur ou étendre/implémenter une autre classe / interface
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+public abstract class AnonymousAbstractClass {
+    abstract String sayHello();
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class AnonymousAbstractClassTest {
+    @Test
+    void useAnonymousClass() {
+        AnonymousAbstractClass anonymousAbstractClass = new AnonymousAbstractClass() {
+            @Override
+            String sayHello() {
+                return "Hello world";
+            }
+        };
+
+        Assertions.assertEquals("Hello world", anonymousAbstractClass.sayHello());
+    }
+}
+----
+
+=== Shadowing
+
+La déclaration des membres de l’inner class cache/surcharge la déclaration des membres de la classe principale.
+
+== Access rules
+
+Java 11 apporte 2 nouveaux attributs à une classe :
+
+- Un membre du groupe (typiquement la classe principale) est désignée comme l’hôte principale. Il contient un attribut qui identifie les autres membres connus.
+- Les autres membres du groupe ont un attribut (nestHost) pour identifier leur hôte principal
+
+=== getNestHost()
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class NestmateReflectionApiExampleTest {
+    @Test
+    void whenGetNestHostFromOuter_thenGetNestHost() {
+        final String nestHostName = "com.training.java.nestedclasses.OuterExample";
+        Assertions.assertEquals(OuterExample.class.getNestHost().getName(), nestHostName);
+    }
+
+    @Test
+    void whenGetNestHostFromInner_thenGetNestHost() {
+        final String nestHostName = "com.training.java.nestedclasses.OuterExample";
+        Assertions.assertEquals(OuterExample.Inner.class.getNestHost().getName(), nestHostName);
+    }
+}
+----
+
+Résultat : true
+
+L’hôte de la classe principale `OuterExample` et de l’inner class `Inner` est le même.
+
+La classe `OuterExample` avec sa référence complète `com.training.java.nestedclasses.OuterExample` dans mon exemple.
+
+=== isNestmateOf()
+
+Détermines si une classe donnée est membre d’un groupe de classe.
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class NestmateReflectionApiExampleTest {
+    @Test
+    void whenCheckNestmatesForNestedClasses_thenGetTrue() {
+        Assertions.assertTrue(OuterExample.Inner.class.isNestmateOf(OuterExample.class));
+    }
+}
+----
+
+=== getNestMembers()
+
+Liste les membres d’un groupe de classes principale et inner classes
+
+[source, java]
+----
+package com.training.java.nestedclasses;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public class NestmateReflectionApiExampleTest {
+    @Test
+    void shouldReturnAllMembers_whenGetNestMembers() {
+        // Given
+        Set<String> members = Arrays.stream(OuterExample.Inner.class.getNestMembers())
+                .map(Class::getName)
+                .collect(Collectors.toSet());
+
+        // When Then
+        Assertions.assertEquals(2, members.size());
+
+        final String referenceOuter = "com.training.java.nestedclasses.OuterExample";
+        final String referenceInner = "com.training.java.nestedclasses.OuterExample$Inner";
+
+        final Set<String> membersExpected = Set.of(referenceOuter, referenceInner);
+        Assertions.assertEquals(members, membersExpected);
+    }
+}
+----
+
+== Javac et java <java file>
+
+Plus besoin de compiler avec `javac` lorsque l’on souhaite exécuter du code Java.
+
+On peut directement exécuter le code avec la commande `java`.
+
+[source, java]
+----
+package com.training.java;
+
+public class App {
+    public static void main(String[] args) {
+        System.out.printf("Hello world !");
+    }
+}
+----
+
+[source]
+----
+Setting java 11.0.2-open as default.
+
+java App.java
+Hello world !
+----
+
+== Amélioration de performance
+
+=== No-Op garbage collector
+
+Nouveau garbage collector nommé **Epsilon : feature expérimentale en Java 11.**
+
+Il est nommé No-Op car il alloue de la mémoire mais ne collecte rien.
+
+Il est utilisé pour simuler l’erreur `OutOfMemory`
+
+Use case :
+
+- Tester les performances
+- Pression sur la mémoire dans le cadre de test
+
+Pour l’activer
+
+[source]
+----
+XX:+UnlockExperimentalVMOptions -XX:+UseEpsilonGC
+----
+
+== Flight Recorder
+
+Monitoring d’applications
+
+JFR est open-source dans Open JDK.
+
+Pour le monitoring :
+
+Java VIsualVM : jvisualvm
+
+JConsole : jconsole
+
+Java Mission Control : jmc
+
+Diagnostic Command Tool : jcmd
+
+Principe : JFR collecte des informations sur les événements dans la JVM durant l’exécution d’une application.
+Est conçu pour minimiser le plus possible l’application durant son exécution.
+
+Pour l’activer :
+
+- quand l’application démarre
+- Passer la commande à jcmd lorsque l’application est déjà démarré
+
+JFR, jcmd et JMC forme un trio pour la collecte et la visualisation des informations de diagnostic.
+
+JFR a 2 concepts.
+
+=== Les événements
+
+JFR collecte les événements de la JVM.
+
+3 types d’événements :
+
+- Evénement instantané comme son nom l’indique collecte un événements immédiatement
+- Evénement de durée si la durée excède un certain seuil
+- Un échantillon des événements pour échantilonner l’activité du système
+
+=== Dataflow
+
+Les événements collectés contiennent beaucoup d’informations.
+
+JFR sauvegarde les événements sous forme de fichier **.jfr**
+
+Différents buffers sont utilisés pour collecte les données.
+
+On peut donc trouver plus de données lors d’une seule requête et ces événements peuvent ne pas être dans l’ordre chronologique lorsque le fichier .jfr est écrit.
+
+=== Paramètre au démarrage de la JVM
+
+[source]
+----
+-XX:StartFlightRecording=duration=30s, filename=java-demo-app.jfr
+----
+
+=== Paramètre avec jcmd
+
+[source]
+----
+jcmd <PID JVM> JFR.start duration=100s filename=flight.jfr
+----
+
+=== Commande existante
+
+JFR.start : pour démarrer un nouveau profiling
+
+JFR.check : checker l’enregistrement
+
+
+|===
+|Paramètre |Utilité |Type
+
+|name
+|Recording name, e.g. "My Recording" or omit to see all recordings
+|String
+
+|verbose
+|Print event settings for the recording(s)
+|Boolean
+|===
+
+JFR.configure
+
+
+|===
+|Paramètre |Utilité |Type
+
+|dumppath
+|Path to dump,.e.g "My Dump path"
+|String
+
+|globalbuffercount
+|Number of global buffers
+|Long
+
+|globalbuffersize
+|Size of a global buffers
+|Long
+
+|maxchunksize
+|Size of an individual disk chunk
+|Long
+
+|memorysize
+|Overall memory size
+|Long
+
+|repositorypath
+|Path to repository,.e.g "My Repository"
+|String
+
+|samplethreads
+|Activate Thread sampling
+|Boolean
+
+|stackdepth
+|Stack Depth
+|Long
+
+|thread_buffer_size
+|Size of a thread buffer
+|Long
+|===
+
+FR.stop : Arriver l’enregistrement des événements
+
+
+|===
+|Paramètre |Utilité |Type
+
+|filename
+|Copy recording data to file, e.g. "/Users/user/My Recording.jfr"
+|String
+
+|name
+|Recording text,.e.g "My Recording"
+|String
+|===
+
+JFR.dump : Copie du contenu de l’enregistrement dans un fichier
+
+
+|===
+|Paramètre |Utilité |Type
+
+|begin
+|Point in time to dump data from, e.g. 09:00, 21:35:00, 2018-06-03T18:12:56.827Z, 2018-06-03T20:13:46.832, -10m, -3h, or -1d
+|String
+
+|end
+|Point in time to dump data to, e.g. 09:00, 21:35:00, 2018-06-03T18:12:56.827Z, 2018-06-03T20:13:46.832, -10m, -3h, or -1d
+|String
+
+|filename
+|Copy recording data to file, e.g. "/Users/user/My Recording.jfr"
+|String
+
+|maxage
+|Maximum duration to dump, in (s)econds, (m)inutes, (h)ours, or (d)ays, e.g. 60m, or 0 for no limit
+|String
+
+|maxsize
+|Maximum amount of bytes to dump, in (M)B or (G)B, e.g. 500M, or 0 for no limit
+|String
+
+|name
+|Recording name, e.g. "My Recording"
+|String
+
+|path-to-gc-roots
+|Collect path to GC roots
+|Boolean
+|===
+
+== Java Mission Control
+
+N’est pas disponible au sein de la JDK.
+
+Il faut donc le télécharger.
+
+== Module déprécié
+
+Nashorn JavaScript incluant JJS
+
+Pack200 compression pour les fichiers JAR
+
+== Autres changement à retenir
+
+Garbage collector : ZGC comme feature expérimentale

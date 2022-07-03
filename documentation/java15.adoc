@@ -1,0 +1,133 @@
+= java 15
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+En septembre 2020
+
+== Text block
+
+**Introduction** : Java 13
+
+**Second preview** : Java 14
+
+**Release** : Java 15
+
+Permet de générer le multilines pour les chaînes de caractères pour représenter par exemple un flux XML, JSON, HTML.
+
+[source, java]
+----
+package com.training.java.textblock;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class TextBlockTest {
+    @Test
+    void useTextBlock() {
+        final String multilines = """
+                It's a multilines \
+                introduce in Java 15
+                    """;
+
+        Assertions.assertTrue(multilines.length() > 0);
+        Assertions.assertTrue(multilines.startsWith("It's"));
+    }
+}
+----
+
+Caractère ‘\’ : indique une fin de ligne.
+
+## Amélioration des exceptions de type NullPointerException
+
+Introduit en Java 14.
+
+Maintenant par défaut en Java 15.
+
+On a précisément la variable qui cause l’exception alors que dans les versions Java précédente, nous avions uniquement la ligne de code dans la stacktrace qui posait problème.
+
+## Hidden classes (JEP 371)
+
+Permet la création au runtime de classes qui ne sont pas découvrables.
+
+Bénéfique pour une personne qui travaillent avec le bytecode dynamique ou sur la JVM.
+
+Elles ne peuvent être liées à d’autres classes.
+
+Elles ne peuvent être découvertes par réflection.
+
+Idéale pour des classes qui ont un cycle court.
+
+
+== Améliorations en preview
+
+=== Records
+
+**Introduction** : java 14
+
+**Seconde preview** : Java 15
+
+[https://openjdk.org/jeps/359](https://openjdk.org/jeps/359)
+
+**Release :** Java 16.
+
+Les exemples seront codés en Java 16 [https://openjdk.org/jeps/395](https://openjdk.org/jeps/395)
+
+
+=== Les classes sealed
+
+**Introduction** : Java 15
+
+**Release** : Java 17
+
+Les exemples seront codés en Java 17
+
+
+=== Pattern matching
+
+**Introduction** : java 14
+
+**Second preview** : java 15
+
+**Release** : java 16
+
+Les exemples seront codés en Java 16.
+
+
+== Features expérimentales (incubator)
+
+=== Foreign Memory API
+
+**Introduction** : java 14
+
+**Second version** : java 15
+
+varHandle API : customiser l’accès à la mémoire
+
+Traitement parallèle
+
+Capacité à manipuler et libérer les adresses pour les appels natifs par exemple
+
+
+=== Garbage collector
+
+ZGC et Shenandoh sont supportés.
+
+Les GC G1 reste par défaut.
+
+
+== Autres changements
+
+Nashorn Javascript : le moteur Javascript a été supprimé.

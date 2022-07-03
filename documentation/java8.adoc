@@ -1,0 +1,881 @@
+= java 8
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+Mars 2014
+
+== Références documentaires
+
+https://openjdk.java.net/projects/jdk8/[https://openjdk.java.net/projects/jdk8/]
+
+https://openjdk.java.net/projects/jdk8/features[https://openjdk.java.net/projects/jdk8/features]
+
+https://www.baeldung.com/java-8-new-features[https://www.baeldung.com/java-8-new-features]
+
+== Expressions Lambdas
+
+== Interfaces : méthodes par défaut, static methods
+
+== Les streams
+
+*java.util.stream*
+
+=== Création
+
+Créer un stream avec la méthode `of(...)`
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.stream.Stream;
+
+public class StreamExample {
+    public Stream<String> createStreamFromString() {
+        return Stream.of("a", "b", "c");
+    }
+}
+----
+
+Créer un stream depuis un tableau
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.stream.Stream;
+
+public class StreamExample {
+    public Stream<String> createStreamFromArray() {
+        String[] arr = new String[]{"a", "b", "c"};
+        return Stream.of(arr);
+    }
+}
+----
+
+=== Parallélisation
+
+Objectif : réaliser un traitement en parallèle
+
+[source]
+List<T>.parallelStream()
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample {
+    public List<String> executeParallelStream() {
+        final List<String> list = Arrays.asList("a", "b", "c");
+        return list.parallelStream()
+                .map(String::toUpperCase)
+                .collect(Collectors.toList());
+    }
+}
+
+----
+
+=== Les opérations
+
+2 catégories :
+
+- **Intermédiaires :** peuvent être chaînées
+- opérations **finales**
+
+**.distinct(): Stream<T>** opérations intermédiaires
+
+**.count(): long** opérations finales
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamExample {
+    public long countDistinctElements() {
+        final List<String> list = Arrays.asList("a", "b", "a");
+
+        return list.stream()
+                .distinct()
+                .count();
+    }
+}
+----
+
+==== Filter
+
+Objectif : filtrer des éléments
+
+[source]
+Stream<T> filter(Predicate<? super T> predicate)
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample {
+    public List<String> filterElements() {
+        final List<String> list = Arrays.asList("France", "Italie", "Japon");
+        return list.stream()
+                .filter(s -> s.contains("on"))
+                .collect(Collectors.toList());
+    }
+}
+----
+
+==== anyMatch
+
+Objectif : rechercher **si un des éléments** match ave le paramètre `Predicate`
+
+[source]
+boolean anyMatch(Predicate<? super T> predicate);
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamExample {
+    public boolean matchWithAnyElement() {
+        final List<String> list = Arrays.asList("a", "b", "c");
+        return list.stream().anyMatch("a"::equals);
+    }
+}
+----
+
+==== allMatch
+
+Objectif : recherche si tous les éléments match avec le paramètre `Predicate`
+
+[source]
+boolean allMatch(Predicate<? super T> predicate);
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamExample {
+    public boolean matchWithAllElements() {
+        final List<String> list = Arrays.asList("a", "b", "c");
+        return list.stream().allMatch("a"::equals);
+    }
+}
+----
+
+==== noneMatch
+
+Objectif : recherche **si aucun élément** ne match avec le paramètre `Predicate`
+
+[source]
+boolean noneMatch(Predicate<? super T> predicate);
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamExample {
+    public boolean matchWithNoneElement() {
+        final List<String> list = Arrays.asList("a", "b", "c");
+        return list.stream().noneMatch("d"::equals);
+    }
+}
+----
+
+==== reduce
+
+Objectif : Aggréger / regrouper les éléments
+
+[source]
+T reduce(T identity, BinaryOperator<T> accumulator);
+
+identity : Value initiale
+
+accumulator : une fonction à appliquer
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class StreamExample {
+    public int countWithReduce() {
+        final List<Integer> list = Arrays.asList(1, 2, 3);
+        return list.stream().reduce(10, Integer::sum);
+    }
+}
+----
+
+== Collectors
+
+=== Joining
+
+Objectif : regrouper des chaînes de caractères
+
+[source]
+----
+public static Collector<CharSequence, ?, String>
+joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix)
+----
+
+Exemple
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample {
+    public String collectStreamJoiningToString() {
+        final List<String> list = Arrays.asList("a", "b", "c");
+        return list.stream()
+                .collect(Collectors.joining(",", "[", "]"));
+    }
+}
+----
+
+Résultat : `[a,b,c]`
+
+=== averagingInt
+
+Objectif : calculer la moyenne des éléments
+
+[source]
+----
+public static <T> Collector<T, ?, Double>
+averagingInt(ToIntFunction<? super T> mapper)
+----
+
+Exemple
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamExample {
+    public Double averagingInt() {
+        final List<Integer> list = Arrays.asList(2, 4, 6);
+        return list.stream()
+                .collect(Collectors.averagingInt(value -> value));
+    }
+}
+----
+
+Résultat : 4
+
+=== summingInt
+
+Objectif : Calculer la somme des éléments
+
+[source]
+----
+public static <T> Collector<T, ?, Integer>
+summingInt(ToIntFunction<? super T> mapper)
+----
+
+Exemple
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class CollectorExample {
+    public int summingInt() {
+        final List<Integer> list = Arrays.asList(2, 4, 6);
+
+        return list.stream()
+                .collect(Collectors.summingInt(value -> value));
+    }
+}
+----
+
+Résultat : 12
+
+=== groupBy
+
+Objectif : regrouper les éléments à l'aide du paramètre de type `Function`
+
+[source]
+----
+public static <T, K> Collector<T, ?, Map<K, List<T>>>
+groupingBy(Function<? super T, ? extends K> classifier)
+----
+
+Exemple
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class CollectorExample {
+    public Map<Integer, List<Integer>> groupByAndCount() {
+        final List<Integer> list = Arrays.asList(2, 4, 6, 2, 4, 4, 6);
+        return list.stream()
+                .collect(Collectors.groupingBy(value -> value));
+    }
+}
+----
+
+Résultat
+
+[source]
+----
+map.get(2) : liste (2,6)
+map.get(3) : liste (4)
+----
+
+=== partitioningBy
+
+Objectif : créer des partitions à l'aide d'un paramètre `Predicate`
+
+[source]
+----
+public static <T> Collector<T, ?, Map<Boolean, List<T>>>
+partitioningBy(Predicate<? super T> predicate)
+----
+
+Exemple
+
+[source,java]
+----
+package com.training.java.streams;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class CollectorExample {
+    public Map<Boolean, List<Integer>> partitioningByEvenOddInteger() {
+        final List<Integer> list = Arrays.asList(1, 2, 3, 4, 5);
+        return list.stream()
+                .collect(Collectors.partitioningBy(o -> o % 2 == 0));
+    }
+}
+----
+
+Résultat
+
+----
+map(TRUE): liste(2,4) pairs
+map(FALSE): liste(1,3,5) impairs
+----
+
+== Les function, biFunction, Consumer, Supplier etc...
+
+|===
+|Type |Comportement
+
+|*Consumer*
+|1 paramètre, aucun résultat
+
+|*BiConsumer*
+|2 paramètres, aucun résultat - +++ </br> DoubleConsumer, IntConsumer, LongConsumer +++
+
+|*Supplier*
+|0 paramètre, 1 résultat - +++ </br> DoubleSupplier, IntSupplier, BooleanSupplier, LongSupplier +++
+
+|*Predicate*
+|1 paramètre, 1 résultat booléen
+
+|*Operator*
+|Reçoit et retourne le même type de valeur
+
+|*Function<T, R>*
+|Type parameters: +++ </br> +++ <T> – the type of the input to the function +++</br>+++ <R> – the type of the result of the function
+
+|*BiFunction<T, U, R>*
+|Paramètres de types différents - +++</br>+++ <T> – the type of the first argument to the function +++</br>+++ <U> – the type of the second argument to the function +++</br>+++ <R> – the type of the result of the function
+|===
+
+=== BiFunction<T,U,R>
+
+Objectif : Représente une fonction qui accepte 2 paramètres et produit un résultat.
+
+[source]
+----
+<T> the type of the first argument to the function
+<U> the type of the second argument to the function
+<R> the type of the result of the function
+----
+
+Appel de la méthode `reduce`
+
+`BinaryOperator` étend de `BiFunction`
+
+[source]
+----
+public interface BinaryOperator<T> extends BiFunction<T,T,T>
+----
+
+Signature de la méthode `reduce`
+
+[source]
+----
+T reduce(T identity, BinaryOperator<T> accumulator);
+----
+
+Exemple
+
+[source,java]
+----
+package com.training.java.functionalinterface.bifunction;
+
+import java.util.Arrays;
+import java.util.List;
+
+public class BifunctionExample {
+    /**
+     * reduce(...) method have two parameters here and
+     * more specifically a {@link java.util.function.BinaryOperator} and
+     * that extends {@link java.util.function.BiFunction}
+     *
+     * @return sum of Integer
+     */
+    public int countWithReduce() {
+        final List<Integer> list = Arrays.asList(1, 2, 3);
+        return list.stream().reduce(10, Integer::sum);
+    }
+}
+----
+
+JUnit
+
+[source,java]
+----
+package com.training.java.functionalinterface.bifunction;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+class BifunctionExampleTest {
+    @Test
+    void countWithReduce() {
+        final BifunctionExample bifunctionExample = new BifunctionExample();
+        Assertions.assertEquals(16, bifunctionExample.countWithReduce());
+    }
+}
+----
+
+Exemple
+[source,java]
+----
+package com.training.java.functionalinterface.bifunction;
+
+import java.util.ArrayList;
+import java.util.function.BiFunction;
+
+public class BifunctionExample {
+    public <T, U, R> List<R> listCombiner(List<T> list1, List<U> list2, BiFunction<T, U, R> combiner) {
+        final List<R> result = new ArrayList<>();
+        for (int i = 0; i < list1.size(); i++) {
+            result.add(combiner.apply(list1.get(i), list2.get(i)));
+        }
+
+        return result;
+    }
+}
+----
+
+JUnit
+[source, java]
+----
+package com.training.java.functionalinterface.bifunction;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.BiFunction;
+
+class BifunctionExampleTest {
+    @Test
+    void listCombiner() {
+        final List<String> listString = Arrays.asList("a", "b", "c");
+        final List<Integer> listInteger = Arrays.asList(1, 2, 3);
+
+        final BiFunction<String, Integer, String> biFunction = ((s, integer) -> s + integer);
+
+        final BifunctionExample bifunctionExample = new BifunctionExample();
+        List<String> result = bifunctionExample.listCombiner(listString, listInteger, biFunction);
+
+        Assertions.assertIterableEquals(Arrays.asList("a1", "b2", "c3"), result);
+    }
+
+    /**
+     * Use andThen(...) on a BiFunction
+     */
+    @Test
+    void listCombinerAndThenGreatherThanZero() {
+        // Given
+        final List<Integer> list1 = Arrays.asList(1, 1, 1);
+        final List<Integer> list2 = Arrays.asList(0, 0, 2);
+
+        final BiFunction<Integer, Integer, Integer> biFunction = Integer::compareTo;
+
+        // When
+        final BifunctionExample bifunctionExample = new BifunctionExample();
+        List<Boolean> result = bifunctionExample.listCombiner(list1, list2, biFunction.andThen(integer -> integer > 0));
+
+        // Then
+        Assertions.assertIterableEquals(Arrays.asList(true, true, false), result);
+    }
+}
+----
+
+== Optional<T>
+
+=== Créer un Optional
+
+Créer un objet de type Optional vide.
+
+[source, java]
+----
+package com.training.java.optional;
+
+import java.util.Optional;
+
+public class OptionalExample {
+    public Optional<String> createEmptyOptional() {
+        return Optional.empty();
+    }
+}
+----
+
+Créer un objet de type Optional avec une valeur
+
+[source, java]
+----
+package com.training.java.optional;
+
+import java.util.Optional;
+
+public class OptionalExample {
+    public Optional<String> createOptionalWithPresentValue() {
+        return Optional.of("value");
+    }
+}
+----
+
+=== Créer un Optional en fonction de la valeur null ou non
+
+Créer un objet de type Optional soit vide soit avec la valeur passée en paramètre
+
+[source, java]
+----
+package com.training.java.optional;
+
+import java.util.Optional;
+
+public class OptionalExample {
+    public Optional<String> useOfNullableIfValueIsNull(final String value) {
+        return Optional.ofNullable(value);
+    }
+}
+----
+
+JUnit
+
+[source, java]
+----
+package com.training.java.optional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class OptionalExampleTest {
+    private OptionalExample optionalExample;
+
+    @BeforeEach
+    void setUp() {
+        optionalExample = new OptionalExample();
+    }
+
+    @Test
+    void shouldReturnEmptyValue_whenValueIsNull() {
+        Assertions.assertFalse(optionalExample.useOfNullableIfValueIsNull(null).isPresent());
+    }
+
+    @Test
+    void shouldReturnOptionalValue_whenValueIsNotNull() {
+        Assertions.assertTrue(optionalExample.useOfNullableIfValueIsNull("value").isPresent());
+    }
+}
+----
+
+=== orElse
+
+Si la valeur d’un Optional est null, on renvoie la valeur passée en paramètre de la méthode `orElse`
+
+[source]
+----
+public T orElse(T other)
+----
+
+Exemple
+
+[source, java]
+----
+package com.training.java.optional;
+
+import java.util.Optional;
+
+public class OptionalExample {
+    public String getUserAddressStreetWithNullUser(final User user) {
+        final Optional<User> userPossible = Optional.ofNullable(user);
+
+        return userPossible.map(User::getAddress)
+                .map(User.Address::getStreet)
+                .orElse("not specified");
+    }
+}
+----
+
+JUnit
+
+[source, java]
+----
+package com.training.java.optional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class OptionalExampleTest {
+    private OptionalExample optionalExample;
+
+    @BeforeEach
+    void setUp() {
+        optionalExample = new OptionalExample();
+    }
+
+    @Test
+    void getUserAddressStreetWithNullUser() {
+        // When
+        final String address = optionalExample.getUserAddressStreetWithNullUser(null);
+
+        // Then
+        Assertions.assertEquals("not specified", address);
+    }
+
+    @Test
+    void getUserStreet_whenStreetIsSpecified() {
+        // Given
+        final User user = new User();
+        user.setAddress(user.new Address("my street"));
+
+        // When
+        final String address = optionalExample.getUserAddressStreetWithNullUser(user);
+
+        // Then
+        Assertions.assertEquals("my street", address);
+    }
+}
+----
+
+=== orElseThrow
+
+Si la valeur d’un Optional est null, on renvoie une exception
+
+[source, java]
+----
+package com.training.java.optional;
+
+import java.util.Optional;
+
+public class OptionalExample {
+    public String getUserAddressStreetOrThrowException(final User user) throws Exception {
+        final Optional<User> userPossible = Optional.ofNullable(user);
+
+        return userPossible.map(User::getAddress)
+                .map(User.Address::getStreet)
+                .orElseThrow(() -> new Exception("not specified"));
+    }
+}
+----
+
+JUnit
+
+[source, java]
+----
+package com.training.java.optional;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class OptionalExampleTest {
+    private OptionalExample optionalExample;
+
+    @BeforeEach
+    void setUp() {
+        optionalExample = new OptionalExample();
+    }
+
+    @Test
+    void shouldThrowException_whenUserIsNull() {
+        // Then
+        Assertions.assertThrows(Exception.class,
+                () -> optionalExample.getUserAddressStreetOrThrowException(null),
+                "not specified");
+    }
+}
+----
+
+== API Date & Time
+
+=== ZonedDateTime
+
+Afficher toutes les zones
+
+[source,java]
+----
+package com.training.java.datetime;
+
+import java.time.ZoneId;
+import java.util.Set;
+
+public class ZonedDateTimeExample {
+    public Set<String> getAllZoneId() {
+        return ZoneId.getAvailableZoneIds();
+    }
+}
+----
+
+On a une zone “Europe/Paris”
+
+=== Convertir depuis un objet de type LocalDateTime
+
+[source, java]
+----
+package com.training.java.datetime;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+
+public class ZonedDateTimeExample {
+    public ZonedDateTime convertFromLocalDateTimeWithEuropeZoneId(final LocalDateTime localDateTime) {
+        return ZonedDateTime.of(localDateTime, ZoneId.of("Europe/Paris"));
+    }
+}
+----
+
+=== Créer une ZoneOffset
+
+[source, java]
+----
+package com.training.java.datetime;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+
+public class ZonedDateTimeExample {
+    public OffsetDateTime createZoneOffset(final LocalDateTime localDateTime) {
+        final ZoneOffset offset = ZoneOffset.ofHours(2);
+
+        return OffsetDateTime.of(localDateTime, offset);
+    }
+}
+----
+
+=== Period
+
+Nombre de jours entre 2 dates en utilisant `between`
+
+[source,java]
+----
+package com.training.java.datetime;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
+
+public class PeriodExample {
+    /**
+     * Days between two dates.
+     * Example :
+     * futurDate : j+2
+     * pasDate : now()
+     * Result : 2
+     *
+     * @param futurDate future date
+     * @param pastDate  present date
+     * @return Number of days
+     */
+    public int betweenTwoDays(final LocalDate futurDate, final LocalDate pastDate) {
+        return Period.between(futurDate, pastDate).getDays();
+    }
+
+    public long betweenTwoDays(final LocalDate futurDate,
+                               final LocalDate pastDate, ChronoUnit chronoUnit) {
+        return chronoUnit.between(futurDate, pastDate);
+    }
+}
+----
+
+Ajouter  des jours avec une Period
+
+[source, java]
+----
+package com.training.java.datetime;
+
+import java.time.LocalDate;
+import java.time.Period;
+
+public class PeriodExample {
+    public LocalDate addDays(final LocalDate localDate, final int days) {
+        return localDate.plus(Period.ofDays(days));
+    }
+}
+----
+

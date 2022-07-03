@@ -1,0 +1,72 @@
+= java 13
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+Septembre 2019
+
+Nouvelle cadence de 6 mois par version
+
+== Feature en preview
+
+=== Switch (second preview)
+
+yield permet de retourner une valeur dans un switch
+
+**Depuis Java 14** - les tests seront faits dans les notes sur Java 14
+
+=== Text block (preview)
+
+Permet de générer le multilines pour les chaînes de caractères pour représenter par exemple un flux XML, JSON, HTML.
+
+**Release** : Java 15.
+
+Les exemples seront codés en Java 15.
+
+## Dynamic CDS Archives
+
+Permet de partager les métadata des classes entre plusieurs JVM pour réduire le temps de démarrage et l’empreinte mémoire.
+
+La JDK 13 permet de générer dynamiquement l’archive contrairement aux versions précédentes.
+
+Pour activer la génération :
+
+[source]
+----
+java -XX:ArchiveClassesAtExit=<archive filename> -cp <app jar> AppName
+----
+
+Pour utiliser l’archive sur une nouvelle instance de l’application
+
+[source]
+----
+java -XX:SharedArchiveFile=<archive filename> -cp <app jar> AppName
+----
+
+== Garbage collector ZGC
+
+Introduit en Java 11.
+
+Pause réduite lors de la collection des objets < 10 ms.
+
+Par défaut désormais, le garbage collector renvoie la mémoire non utilisée à l’OS.
+
+== API Socket
+
+java.net.Socket
+
+Ecrit en vieux Java et C
+
+Implémentation par défaut : `NioSocketImpl`.

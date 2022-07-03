@@ -1,0 +1,299 @@
+= java 16
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+Mars 2021
+
+== DateTimeFormatter period of day
+
+Au lieu de 3pm, on peut écrire  3 in the afternoon avec un nouvel symbole lorsqu’on formate du temps en Java : symbole B.
+
+[source, java]
+----
+package datetimeformatter;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+
+public class DateTimeFormatterExampleTest {
+    @Test
+    void usePeriodOfDay() {
+        // Given
+        final LocalTime localTime = LocalTime.parse("15:25:08");
+        final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("h B")
+                .withLocale(Locale.US);
+
+        // When Then
+        Assertions.assertEquals("3 in the afternoon", localTime.format(dateTimeFormatter));
+    }
+}
+----
+
+## Streams toList()
+
+Nouvelles méthodes au lieu d’utiliser
+
+[source]
+----
+Collectors.toList()
+----
+
+On peut directement utiliser la méthode `toList()` sur un `Stream`.
+
+[source, java]
+----
+package streams;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class StreamsExample {
+    @Test
+    void useStreamsToList() {
+        final List<String> ages = Arrays.asList("1", "2", "3");
+
+        // When Then
+        final List<Integer> agesOldString = ages.stream()
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+
+        Assertions.assertIterableEquals(Arrays.asList(1, 2, 3), agesOldString);
+
+        // When Then
+        final List<Integer> agesString = ages.stream()
+                .map(Integer::parseInt)
+                .toList();
+
+        Assertions.assertIterableEquals(Arrays.asList(1, 2, 3), agesString);
+    }
+}
+----
+
+== Pattern matching sur l’instruction instanceof (JEP 394)
+
+https://openjdk.org/jeps/394
+
+**Introduction** : Java 14
+
+**Release** : Java 16
+
+[source,java]
+----
+package com.training.java.patternmatchinginstanceof;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class InstanceOfExampleTest {
+    @Test
+    void usePatternMatchingWithInstanceOf() {
+        Object obj = "TEST";
+        if (obj instanceof String str) {
+            Assertions.assertEquals("TEST", str);
+        }
+    }
+}
+----
+
+Il n’est plus utile de réaliser un CAST.
+
+== Record (JEP 359)
+
+[https://openjdk.org/jeps/359](https://openjdk.org/jeps/359)
+
+**Introduction** : Java 14
+
+**Release** : Java 16
+
+**Objectif** : réduire le code répétitif sur les POJO par exemple
+
+Ajoute un constructeur, getter, equals, hashcode, toString
+
+`private final` pour chaque membres d’instance
+
+Pas de setter
+
+[source, java]
+----
+package com.training.java.records;
+
+public record User(int id, String password) {
+}
+----
+
+[source,java]
+----
+package records;
+
+import com.training.java.records.User;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class RecordsExampleTest {
+    @Test
+    void useRecord() {
+        final User user = new User(123, "pwd");
+
+        // Then
+        Assertions.assertEquals(123, user.id());
+        Assertions.assertEquals("pwd", user.password());
+    }
+}
+----
+
+=== Equals implémenté
+
+[source,java]
+----
+package records;
+
+import com.training.java.records.User;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class RecordsExampleTest {
+    @Test
+    void useEqualsRecord() {
+        final User user = new User(123, "pwd");
+        final User userExpected = new User(123, "pwd");
+
+        Assertions.assertEquals(userExpected, user);
+    }
+}
+----
+
+==== toString()
+
+[source,java]
+----
+package records;
+
+import com.training.java.records.User;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class RecordsExampleTest {
+    @Test
+    void useToStringRecord() {
+        // Given
+        final User user = new User(123, "pwd");
+
+        // When Then
+        Assertions.assertTrue(user.toString().contains("pwd"));
+    }
+}
+----
+
+=== Record dans une Innerclass (depuis Java 16)
+
+[source,java]
+----
+package com.training.java.records;
+
+public class RecordInInnerClassExample {
+    class InnerClass {
+        User user = new User(123, "passd");
+    }
+}
+----
+
+=== Constructeur possible
+
+[source,java]
+----
+package com.training.java.records;
+
+public record User(int id, String password) {
+    public User {
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("little pass");
+        }
+    }
+}
+----
+
+Erreur
+
+[source,java]
+----
+package com.training.java.records;
+
+public record User(int id, String password) {
+    public User {
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("little pass");
+        }
+    }
+
+    // Error
+    public User(final int id) {
+        this.id = id;
+        this.password = "default";
+    }
+}
+----
+
+Erreur sur le second constructeur car il n’est pas possible de définir un constructeur par défaut et un constructeur qui matche avec un des membres de la classe.
+
+[IMPORTANT]
+====
+
+Non-canonical record constructor must delegate to another constructor
+
+====
+
+Correction
+
+[source,java]
+----
+package com.training.java.records;
+
+public record User(int id, String password) {
+    public User {
+        if (password.length() < 8) {
+            throw new IllegalArgumentException("little pass");
+        }
+    }
+
+    public User(final int id) {
+        this(id, "default");
+    }
+}
+----
+
+Seul l’appel au constructeur généré par le Record est possible car la construction de l’objet est délégué à ce constructeur.
+
+Les Record sont toujours `final`.
+
+Ils ne peuvent être `abstract`.
+
+Déclaration de variables `static` possible
+
+Déclaration de `méthodes` possibles
+
+🚫 On ne peut pas utiliser les méthodes natives.
+
+== Incubator
+
+=== VectorAPI (JEP 338)
