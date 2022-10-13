@@ -1,0 +1,708 @@
+= java 19
+:toc:
+:toc-placement: left
+:toclevels: 1
+:showtitle:
+:toc-title: pass:[<b>Contenus</b>]
+
+// Need some preamble to get TOC:
+{empty}
+
+ifndef::env-github[]
+[.text-center]
+image::./images/logo.png[]
+endif::[]
+
+== Release
+
+Septembre 2022
+
+== Record pattern (Preview)
+
+[source, java]
+----
+package com.training.java.recordpattern;
+
+public class RecordPatternExample {
+    boolean isSameColoredPoint(final Object rectangle, final Color color) {
+        return rectangle instanceof Rectangle(final ColoredPoint firstColorPoint,final ColoredPoint secondColorPoint)
+                && firstColorPoint.color() == color
+                && secondColorPoint.color() == color;
+    }
+}
+----
+
+Il est possible de définir deux variables, dans mon exemple, `firstColorPoint` et `secondColorPoint` directement.
+
+`ColorPoint` est également un type `record`.
+
+La feature *Record Pattern* supporte donc l'imbrication.
+
+Test
+
+[source, java]
+----
+package com.training.java.recordpattern;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class RecordPatternExampleTest {
+    @Test
+    void shouldReturnTheSameColor() {
+        // Given
+        final var coloredPoint = new ColoredPoint(new Point(2, 2), Color.RED);
+        final var rectangle = new Rectangle(coloredPoint, coloredPoint);
+
+        // When Then
+        assertTrue(new RecordPatternExample().isSameColoredPoint(rectangle, Color.RED));
+    }
+
+    @Test
+    void shouldReturnDifferentColorPoint() {
+        // Given
+        final var coloredFirstPoint = new ColoredPoint(new Point(2, 2), Color.RED);
+        final var coloredSecondPoint = new ColoredPoint(new Point(5, 5), Color.BLUE);
+        final var rectangle = new Rectangle(coloredFirstPoint, coloredSecondPoint);
+
+        // When Then
+        assertFalse(new RecordPatternExample().isSameColoredPoint(rectangle, Color.BLUE));
+    }
+
+    @Test
+    void shouldReturnFalse_whenShapeIsNotRectangle() {
+        // Given
+        final var triangle = new Triangle(new Point(4, 4), new Point(2, 2), new Point(4, 2));
+
+        // When Then
+        assertFalse(new RecordPatternExample().isSameColoredPoint(triangle, Color.BLUE));
+    }
+}
+----
+
+== Switch case when, guarded patterns
+
+Introduction des guarded patterns, la possibilité d'ajouter une condition `when` à l'instruction `case` lors de l'utilisatio du `switch`si et seulement si le cas est un pattern.
+
+Il n'est pas possible d'écrire par exemple
+[source]
+----
+switch(o):
+    case "Hello" when...
+----
+
+Exemple d'utilisation du `case ... when ...`
+
+[source, java]
+----
+package com.training.java.switchpatternmatching;
+
+public class SwitchExample {
+    /**
+     * use switch case and conditions in the case instruction
+     *
+     * @param shape {@link Shape}
+     * @return a joke
+     */
+    String useConditionInCase(final Shape shape) {
+        switch (shape) {
+            case Triangle triangle when triangle.getSides() == 3 -> {
+                return "Yes of course. My name's Triangle and i have three sides";
+            }
+            default -> {
+                return "It's an other shape";
+            }
+        }
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.switchpatternmatching;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class SwitchExampleTest {
+    private SwitchExample switchExample;
+
+    @BeforeEach
+    void setUp() {
+        switchExample = new SwitchExample();
+    }
+
+    @Test
+    void useConditionWhenInCase() {
+        final String joke = "Yes of course. My name's Triangle and i have three sides";
+        Assertions.assertEquals(joke, switchExample.useConditionInCase(new Triangle()));
+    }
+
+    @Test
+    void shouldReturnOtherShape_whenUseConditionWhenInCase() {
+        final var message = "It's an other shape";
+        Assertions.assertEquals(message, switchExample.useConditionInCase(new Rectangle()));
+    }
+
+    @Test
+    void shouldReturnOtherShape_whenUseTriangleSpecialShape() {
+        final var message = "It's an other shape";
+        Assertions.assertEquals(message, switchExample.useConditionInCase(new TriangleSpecialShape()));
+    }
+}
+----
+
+== Virtual thread (Preview)
+
+=== Style thread-per-request versus virtual thread
+
+* thread-per-request : 1 thread JVM = 1 thread OS
+* virtual thread
+** géré par la JVM
+** donne l'illusion d'un mapping de plusieurs thread virtuels avec très peu de thread de l'OS
+** Support des variables locales et héritées à un thread
+* Le développeur peut choisir le type de thread
+
+Example en utilisant un https://docs.oracle.com/en/java/javase/19/docs/api/java.base/java/util/concurrent/Executors.html[`Executors`] qui est une factory pour exécuter des tâches.
+
+
+=== Utilisation de Executors.newVirtualThreadPerTaskExecutor()
+
+* Création d'un `ExecutorService`
+* et création d'un thread par tâche
+* L'interface `ExecutorService` étend désormais `AutoCloseable` donc possibilité d'utiliser la syntaxe `try with resources`
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
+
+public class VirtualThreadExample {
+    List<Integer> useVirtualThreadPerTask() throws ExecutionException, InterruptedException {
+        final List<Integer> sumsPrice = new ArrayList<>();
+        try (final var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            var rangeLeftFuture = executor.submit(() -> IntStream.range(1, 3).sum());
+            var rangeRightFuture = executor.submit(() -> IntStream.range(3, 5).sum());
+
+            sumsPrice.add(rangeLeftFuture.get());
+            sumsPrice.add(rangeRightFuture.get());
+        }
+
+        return sumsPrice;
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.ExecutionException;
+
+class VirtualThreadExampleTest {
+    private VirtualThreadExample virtualThreadExample;
+
+    @BeforeEach
+    void setUp() {
+        virtualThreadExample = new VirtualThreadExample();
+    }
+
+    @Test
+    void useVirtualThread() throws InterruptedException, ExecutionException {
+        // When
+        final var futures = virtualThreadExample.useVirtualThreadPerTask();
+
+        // Then
+        final var totalPricePossible = futures.stream().reduce(Integer::sum);
+
+        Assertions.assertTrue(totalPricePossible.isPresent());
+        Assertions.assertEquals(10, totalPricePossible.get());
+    }
+}
+----
+
+=== Créer un Thread virtuel et le démarrer
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import java.util.stream.IntStream;
+
+public class VirtualThreadExample {
+    public Thread createVirtualThreadAndStart() {
+        return Thread.ofVirtual().start(() -> IntStream.range(1, 3).forEach(System.out::println));
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class VirtualThreadExampleTest {
+    private VirtualThreadExample virtualThreadExample;
+
+    @BeforeEach
+    void setUp() {
+        virtualThreadExample = new VirtualThreadExample();
+    }
+
+    @Test
+    void shouldReturnVirtualThread_whenCreateVirtualThreadAndStart() {
+        Assertions.assertTrue(virtualThreadExample.createVirtualThreadAndStart().isVirtual());
+    }
+}
+----
+
+=== Méthode Thread#startVirtualThread
+
+Démarrer directement un Thread virtuel.
+
+Signature
+
+[source]
+----
+@PreviewFeature(feature = PreviewFeature.Feature.VIRTUAL_THREADS)
+public static Thread startVirtualThread(Runnable task)
+----
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+
+public class VirtualThreadExample {
+
+        public Thread startVirtualThread() {
+        return Thread.startVirtualThread(() -> IntStream.range(1, 3).forEach(System.out::println));
+    }
+}
+----
+
+*Priorité normale d'un Thread virtuel*
+
+[source]
+----
+public static final int NORM_PRIORITY = 5;
+----
+
+=== Améliorations de Future
+
+*Méthode `Future.resultNow()` pour*
+
+* Obtenir le résultat du Future ou une exception
+* Obtenir le statut de la tâche
+* Utilisation dans un stream par exemple
+
+Signature
+
+[source]
+----
+default V resultNow()
+----
+
+Exemple
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+
+public class VirtualThreadExample {
+    Optional<Integer> getFutureResultNow() {
+        final List<Future<Integer>> futures = new ArrayList<>();
+        try (final var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            futures.add(executor.submit(() -> IntStream.range(1, 3).sum()));
+            futures.add(executor.submit(() -> IntStream.range(3, 5).sum()));
+        }
+
+        return futures.stream()
+                .filter(future -> Future.State.SUCCESS == future.state())
+                .map(Future::resultNow)
+                .reduce(Integer::sum);
+    }
+}
+----
+
+*Récupérer l'état d'un `Future`*
+
+Signature
+
+[source]
+----
+default State state()
+----
+
+`State` est une Enum : RUNNING, SUCCESS, FAILED, CANCELLED
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+
+public class VirtualThreadExample {
+    public Future.State getStateFuture() throws InterruptedException {
+        Future<Integer> future;
+        try (final var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            future = executor.submit(() -> IntStream.range(1, 3).sum());
+        }
+
+        return future.state();
+    }
+}
+----
+
+Test
+
+[source, java]
+----
+package com.training.java.virtualthreads;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.util.concurrent.Future;
+
+class VirtualThreadExampleTest {
+    private VirtualThreadExample virtualThreadExample;
+
+    @BeforeEach
+    void setUp() {
+        virtualThreadExample = new VirtualThreadExample();
+    }
+
+    @Test
+    void getFutureState() throws InterruptedException {
+        Assertions.assertEquals(Future.State.SUCCESS, virtualThreadExample.getStateFuture());
+    }
+}
+----
+
+== Structured concurrency (incubator)
+
+* Permet d'encadrer un ensemble de thread nommé *subtask* au sein d'une *scope*.
+* Si un des thread échoue, l'ensemble des thread de la scope sont arrêtés (cancel)
+* Possibilité de retourner le résultat du premier thread qui réussit son traitement
+* Possibilité de retourner le résultat du premier thread qui réussit son traitement même si un thread dans une scope échoue.
+
+L'objectif est donc de faire échouer un ensemble de thread et donc d'économiser des ressources si un thread échoue.
+
+Dans ce cadre, il est inutile d'attendre la fin d'un second thread si le premier échoue si on souhaite, dans le cas passant, assembler le résultat de deux threads.
+
+Nouvelle classe
+
+[source]
+----
+public class StructuredTaskScope<T> implements AutoCloseable
+----
+
+=== Cas passant, tout va bien dans le meilleur des mondes
+
+Utilisation de `StructuredTaskScope.ShutdownOnFailure()`
+
+[source, java]
+----
+package com.training.java.structuredconcurrency;
+
+import jdk.incubator.concurrent.StructuredTaskScope;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+
+public class StructuredConcurrencyExample {
+    Integer useStructuredTaskScope() throws InterruptedException, ExecutionException {
+        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+            Future<Integer> futureSumFirstThread = scope.fork(() -> IntStream.range(0, 3).sum());
+
+            // time-consuming task
+            Future<Integer> futureSumSecondThread = scope.fork(() -> IntStream.range(3, 5).sum());
+
+            scope.join();
+            scope.throwIfFailed();
+
+            return futureSumFirstThread.resultNow() + futureSumSecondThread.resultNow();
+        }
+    }
+}
+----
+
+`scope.join()` va attendre le résultat de tous les threads.
+
+`scope.throwIfFailed()` fera échouer la scope si un des thread est en échecs.
+
+On récupère ensuite le résultat de l'objet de type `Future`.
+
+*Test*
+
+[source, java]
+----
+package com.training.java.structuredconcurrency;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.ExecutionException;
+
+class StructuredConcurrencyExampleTest {
+    private StructuredConcurrencyExample structuredConcurrencyExample;
+
+    @BeforeEach
+    void setUp() {
+        structuredConcurrencyExample = new StructuredConcurrencyExample();
+    }
+
+    @Test
+    void useStructuredTaskScope() throws ExecutionException, InterruptedException {
+        Assertions.assertEquals(10, structuredConcurrencyExample.useStructuredTaskScope());
+    }
+}
+----
+
+=== StructuredTaskScope.ShutdownOnFailure() : un des thread échoue
+
+* `ShutdownOnFailure` permet de propager l'erreur.
+* Les autres thread lancés au sein de la scope seront CANCELLED.
+
+[source, java]
+----
+package com.training.java.structuredconcurrency;
+
+import jdk.incubator.concurrent.StructuredTaskScope;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+
+public class StructuredConcurrencyExample {
+    public void useStructuredTaskScopeFailedThread() throws InterruptedException, ExecutionException {
+        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+            Future<Integer> futureSumFirstThread = scope.fork(() -> {
+                throw new InterruptedException("an exception");
+            });
+
+            // time-consuming task to view state = 4 CANCELLED
+            Future<Integer> futureSumSecondThread = scope.fork(() -> IntStream.range(5, 10000000).sum());
+
+            scope.join();
+            scope.throwIfFailed();
+
+            // It doesn't execute because an exception is thrown by one of task in the scope
+            futureSumFirstThread.resultNow();
+            futureSumSecondThread.resultNow();
+        }
+    }
+}
+----
+
+Le premier thread virtuel `futureSumFirstThread` échoue explicitement, pour l'exemple.
+
+Si on inspecte le second thread ``utureSumSecondThread` qui est volontairement long pour voir son statut (`Future.State`), il est à 4 (CANCELLED) car il n'est pas terminé au moment où le premier thread échoue.
+
+Les instructions
+
+[source]
+----
+futureSumFirstThread.resultNow();
+futureSumSecondThread.resultNow();
+----
+
+ne seront jamais exécutées puisque l'erreur survient lors de l'instruction `scope.throwIfFailed();``
+
+*Test*
+
+[source, java]
+----
+package com.training.java.structuredconcurrency;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class StructuredConcurrencyExampleTest {
+    private StructuredConcurrencyExample structuredConcurrencyExample;
+
+    @BeforeEach
+    void setUp() {
+        structuredConcurrencyExample = new StructuredConcurrencyExample();
+    }
+
+    @Test
+    void shouldThrowException_whenOneOfThreadFailedInStructuredScope() {
+        final var exceptionMessage = Assertions.assertThrows(ExecutionException.class,
+                        () -> structuredConcurrencyExample.useStructuredTaskScopeFailedThread())
+                .getCause().getMessage();
+
+        Assertions.assertEquals(exceptionMessage, "an exception");
+    }
+}
+----
+
+=== StructuredTaskScope.ShutdownOnSuccess
+
+Récupérer le résultat d'un thread si au moins un des thread est terminé.
+
+[source, java]
+----
+package com.training.java.structuredconcurrency;
+
+import jdk.incubator.concurrent.StructuredTaskScope;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+
+public class StructuredConcurrencyExample {
+    public Integer useStructureTaskScopeSuccessThread() throws InterruptedException, ExecutionException {
+        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<Integer>()) {
+            scope.fork(() -> IntStream.range(0, 5).sum());
+            scope.fork(() -> IntStream.range(5, 10000000).sum());
+
+            scope.join();
+            return scope.result();
+        }
+    }
+}
+----
+
+Le premier thread est volontairement plus rapide.
+
+[source]
+----
+scope.fork(() -> IntStream.range(0, 5).sum());
+----
+
+*Test*
+
+[source, java]
+----
+package com.training.java.structuredconcurrency;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.ExecutionException;
+
+class StructuredConcurrencyExampleTest {
+    private StructuredConcurrencyExample structuredConcurrencyExample;
+
+    @BeforeEach
+    void setUp() {
+        structuredConcurrencyExample = new StructuredConcurrencyExample();
+    }
+
+    @Test
+    void shouldReturnTheFirstResultThread_whenUseShutdownOnSuccess() throws ExecutionException, InterruptedException {
+        Assertions.assertEquals(10, structuredConcurrencyExample.useStructureTaskScopeSuccessThread());
+    }
+}
+----
+
+On obtient son résultat : la comme des nombres de 0 à 4 dans mon exemple : 10.
+
+=== StructuredTaskScope.ShutdownOnSuccess si un des thread échoue
+
+Exception ? ou on obtient le résultat du thread en succès ?
+
+[source, java]
+----
+package com.training.java.structuredconcurrency;
+
+import jdk.incubator.concurrent.StructuredTaskScope;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.IntStream;
+
+public class StructuredConcurrencyExample {
+    Integer useStructureTaskScopeSuccessAndThreadException() throws InterruptedException, ExecutionException {
+        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<Integer>()) {
+            scope.fork(() -> {
+                throw new Exception("an exception");
+            });
+
+            scope.fork(() -> IntStream.range(0, 5).sum());
+
+            scope.join();
+            return scope.result();
+        }
+    }
+}
+
+----
+
+*Test*
+
+[source,java]
+----
+package com.training.java.structuredconcurrency;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.ExecutionException;
+
+class StructuredConcurrencyExampleTest {
+    private StructuredConcurrencyExample structuredConcurrencyExample;
+
+    @BeforeEach
+    void setUp() {
+        structuredConcurrencyExample = new StructuredConcurrencyExample();
+    }
+
+    @Test
+    void shouldReturnThreadResult_whenOneThreadSuccessAndAnOtherFail() throws ExecutionException, InterruptedException {
+        Assertions.assertEquals(10, structuredConcurrencyExample.useStructureTaskScopeSuccessAndThreadException());
+    }
+}
+----
+
+On obtient le résultat du thread en succès (ShutdownOn *Success* ).
+
+== Foreign Function & Memory API (Preview) FFM
+
+* Si vous avez besoin d'appeler des méthodes venant de librairies externes.
+* Permet l'interaction avec la mémoire utilisée par la JVM et la mémoire hors JVM
