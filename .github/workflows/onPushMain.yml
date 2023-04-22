@@ -1,0 +1,16 @@
+on: [ workflow_dispatch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: build and unit testing
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Build and unit testing
+        run: mvn -B test
